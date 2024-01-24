@@ -34,12 +34,22 @@ class TranslationLoaderManager extends FileLoader
             $modelClass = config('translation-loader.model');
             $model = new $modelClass;
             if (is_a($model, LanguageLine::class)) {
-                if (! Schema::hasTable($model->getTable())) {
+                if (! $this->checkConnection() || ! Schema::hasTable($model->getTable())) {
                     return parent::load($locale, $group, $namespace);
                 }
             }
 
             throw $e;
+        }
+    }
+
+    protected function checkConnection(){
+        try {
+            \DB::connection()->getPDO();
+            return true;
+        }
+        catch (\Exception $e) {
+            return false;
         }
     }
 
